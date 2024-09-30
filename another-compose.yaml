@@ -1,0 +1,46 @@
+version: '3'
+services: 
+  dbuserregistration:
+    image: postgres:${APP_DB_POSTGRESIMAGEVERSION}
+    networks: 
+      - db_networks
+    network_mode: bridge
+    container_name: dbuserregistration
+    volumes: 
+      - postgres-data-flyway:/var/lib/postgresql/data
+    ports: 
+      - '5432:5432'
+    environment: 
+     - POSTGRES_PASSWORD=${APP_DB_PASSWORD}
+     - POSTGRES_USER=${APP_DB_USERNAME}
+     - POSTGRES_DB=${APP_DB_NAME}
+
+  userregistration: 
+    container_name: ${SPRING_APPLICATION_NAME}
+    image: userregistration:${APP_VERSION}
+    build: 
+      context:
+      dockerfile: Dockerfile
+      args: 
+        BUILD_NO: ${APP_BUILD_NO}
+      labels: 
+        com.uvsoftgroup.userregistration: 'User Registration REST apis'
+        database.migration.flyway: 'Database migrations done by flyway'
+    ports: 
+      - '2021:2020'
+    networks: 
+      - db_network
+    depends_on:
+      - dbuserregistration
+    links: 
+      - dbuserregistration
+volumes: 
+  postgres-data-flyway:
+networks: 
+
+      # have a .env file that has the values, then read from there.
+      # The app.yaml can also read from the .env when it's running
+      # Load env using a package or from a command
+      # alternatively, can set the env values in a container & pull from there
+      # no need to define network or container name: it takes service name and compose automatically creates the network
+    # need volumes at the bottom instead of networks!
